@@ -2,7 +2,7 @@ import numpy as np
 from SSJ_ext import utils as utils 
 
 import copy
-from SSJ_Org import asymptotic
+from SSJ_ext import asymptotic
 
 
 def het(exogenous, policy, backward):
