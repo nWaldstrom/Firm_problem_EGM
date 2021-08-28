@@ -1,0 +1,226 @@
+\documentclass[danish]{article}
+\renewcommand{\familydefault}{\rmdefault}
+%\usepackage[T1]{fontenc}
+%\usepackage{babel}
+\usepackage{graphicx}
+%\usepackage[unicode=true,pdfusetitle,
+% bookmarks=true,bookmarksnumbered=false,bookmarksopen=true,bookmarksopenlevel=1,
+% breaklinks=false,pdfborder={0 0 0},pdfborderstyle={},backref=section,colorlinks=false]
+% {hyperref}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\newcommand{\lyxaddress}[1]{
+	\par {\raggedright #1
+	\vspace{1.4em}
+	\noindent\par}
+}
+
+
+\usepackage[USenglish]{babel}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=3cm,rmargin=3cm, headheight=2cm, footskip=1cm}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[justification=centering]{caption}% or e.g. [format=hang]
+
+%\newcommand{\logo}{Q:/Makromodel/Templates/MAKRO_logo_500.png}
+%\newcommand{\logo}{MAKROlogo300_srcset-large.png}
+%\newcommand{\logo}{MAKRO_logo_500.png}
+
+\definecolor{darkblue}{HTML}{0F2D40} 
+\renewcommand{\headrulewidth}{0pt} % Remove fancy header line
+\usepackage{amsmath}
+\fancyhead[L]{}
+%\fancyhead[C]{}
+%\fancyhead[C]{\includegraphics[width=2cm]{\logo}\vspace{0.5cm}}
+\fancyhead[R]{}
+\usepackage{hyperref}
+
+\makeatletter\let\ps@plain\ps@fancy\makeatother  % Also use header on first page
+
+%\setcitestyle{round}
+
+\usepackage{amsmath}
+%\numberwithin{figure}{subsection}
+
+\makeatother
+\usepackage[toc,page]{appendix}
+
+
+\renewcommand{\baselinestretch}{1.4}
+\usepackage{adjustbox}
+% \usepackage{Float}
+\usepackage{subcaption}
+
+%\usepackage{chngcntr}
+%\counterwithin{figure}{section}
+
+\usepackage{booktabs,tabularx}
+\usepackage[input-decimal-markers=.]{siunitx}
+
+%\newcolumntype{L}{>{$}l<{$}}
+%\newcolumntype{C}{>{$}c<{$}}
+%\newcolumntype{R}{>{$}r<{$}}
+
+\usepackage{threeparttable}
+
+
+\usepackage{chngcntr}
+\counterwithout{figure}{section}
+\counterwithout{table}{section}
+
+\renewcommand{\figurename}{Figur}
+\renewcommand{\tablename}{Tabel}
+\usepackage[bottom]{footmisc}
+\usepackage[ruled,vlined]{algorithm2e}
+%\usepackage[pagebackref]{hyperref}
+ 
+
+%\usepackage[danish]{babel}
+
+\usepackage[authordate,backend=biber]{biblatex-chicago}
+%\usepackage[authordate,bibencoding=auto,backend=biber,natbib,url=false,doi=false ]{biblatex-chicago}
+%\usepackage[notes,backend=biber]{biblatex-chicago}
+
+
+%\addbibresource{refs.bib}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,      
+    urlcolor=blue,
+}
+
+\begin{document}
+
+
+
+\title{Solving the problem of the firm with the EGA algorithm}
+
+
+\author{João Ejarque and Nicolai Waldstrom \footnote{João Miguel Ejarque: jme@dreammodel.dk, DREAM/MAKRO, Landgreven 4, 1301 København K. The opinions contained in this paper do not represent the vews of the DREAM/MAKRO group.} }
+
+\selectlanguage{USenglish}
+\date{\today}
+
+%\abstract{The problem of the firm with costly external finance.}
+
+\maketitle
+
+
+\section{Introduction} 
+
+This note solves a problem of the firm's optimal choice of inputs as an application of the Endogenous Grid Points Algorithm of Carroll (2006).
+
+\section{Problem of the firm}
+
+A price taking firm produces output using capital and labor. Capital has the law of motion  $K_t =  \left(1-\delta_k \right) K_{t-1} + I_t$ and the firm has the following net production function with $\alpha_k+\alpha_l<1$, where net output $N_t$ is given by gross output $Y_t$ minus adjustment costs to changing the capital stock, $AC_t$:
+\begin{gather*}
+N_t \;= \; A_t \cdot K^{\alpha_k}_{t-1} \cdot L^{\alpha_l}_{t}   \;  - \; \frac{\gamma}{2}\cdot K_{t-1}\cdot \left(  \frac{I_t}{K_{t-1}}  \; - \;  \delta_k   \right)^2 \; \equiv \; Y_t   \;  - \; \frac{\gamma}{2}\cdot K_{t-1}\cdot \left(  \frac{K_t}{K_{t-1}}  \; -\;  1   \right)^2 
+\end{gather*}
+and profits are given by $\pi_t \;= \; p_t N_t   \; - \; w_t L_t \; - p^I_t I_t$. The unconstrained firm has discount factor between time periods $t$ and $t+1$ given by 
+\begin{gather*}
+\beta_{t+1} = \frac{1}{\left(1+r_{t+1} + r^p_{t+1} \right)}
+\end{gather*}
+However, external finance is costly and therefore we add a constraint $\pi_t>0$.
+
+
+\subsection{First order conditions and steady state}
+
+The first order conditions for this problem have the form
+\begin{gather*}
+\frac{\partial\pi_{t}}{\partial K_{t}}+\underbrace{\beta_{t+1}\left(\frac{1+\lambda_{t+1}}{1+\lambda_t}\right)}_{\hat{\beta}_{t+1}}\frac{\partial\pi_{t+1}}{\partial K_{t}} \; =\; 0
+\end{gather*}
+where $\lambda$ is the Lagrange multiplier on the positive profit constraint. This yields the expanded discount factor $\hat{\beta}$. In the case of the capital stock we can write
+\begin{gather*}
+\hat{\beta}_{t+1}p_{t+1}F_{t+1}^{K}\;=\;p_{t}^{I}-\hat{\beta}_{t+1}p_{t+1}^{I}\left(1-\delta_{k}\right)\; +\; \frac{\partial AC_{t}}{\partial K_{t}}p_{t} \; +\; \hat{\beta}_{t+1}\frac{\partial AC_{t+1}}{\partial K_{t}}p_{t+1}
+\end{gather*}
+\begin{gather*}
+\frac{\partial AC_{t}}{\partial K_{t}}p_{t} \; +\; \hat{\beta}_{t+1}\frac{\partial AC_{t+1}}{\partial K_{t}}p_{t+1} \; \equiv\; p_t \gamma\left(\frac{K_{t}}{K_{t-1}}-1\right)+E_{t}\left\{ \beta_{t+1} p_{t+1}\frac{\gamma}{2}\left[\left(\frac{K_{t+1}}{K_{t}}\right)^{2}-1\right]\right\} 
+\end{gather*}\\
+In steady state adjustment costs are zero and the external finance constraint does not bind. In that case we obtain
+\begin{gather*}
+p \alpha_k \frac{Y}{K} = p^I(1/\beta - (1-\delta_k)) \equiv U_{k}   
+\end{gather*}
+The first order condition for employment is $\; p \alpha_l Y/L = w  \equiv U_l \;$ where $U_l$ is the user cost of labor which here equals the wage. 
+
+
+\subsection{Applying the EGA to the problem of the firm}
+
+
+This is a straightforward application of Carroll's method. Define $X_{t+1}=K_{t+1}/K_{t}$ and start from given values of $X_{t+1},\;K_{t+1},\;K_{t}$, and $L_{t+1}$. A suitable vector of possible values  for these objects can be derived from computing steady state values associated with extreme realizations of the underlying shocks. The object $X$ would then take values in the interval $K_{min}/K_{max}$ and $K_{max}/K_{min}$. Then invert the f.o.c. to obtain $X_{t}$,
+\begin{gather*}
+-p_{t}^{I}+E_{t}\left\{ \beta_{t+1}p_{t+1}^{I}\left(1-\delta\right)\right\} +E_{t}\left\{ \beta_{t+1} p_{t+1} \left( \alpha_k A_{t+1} K_{t}^{\alpha_k-1}L_{t+1}^{\alpha_l} + \frac{\gamma}{2}\left[X_{t+1}^{2}-1\right]\right) \right\} =p_{t} \gamma\left(X_{t}-1\right) 
+\end{gather*}
+and then use $X_{t}=K_{t}/K_{t-1}$ to get $K_{t-1}$, and finally the time t f.o.c. for Labor to get $L_{t}$. This is trivial if constraints do not bind.\\
+In order to account for the profit constraint 
+\begin{gather*}
+\pi_t \;= \; p_t A_t \cdot K^{\alpha_k}_{t-1} \cdot L^{\alpha_l}_{t}   \;  - \; p_t \frac{\gamma}{2}\cdot K_{t-1}\cdot \left(  \frac{K_t}{K_{t-1}}  \; -\;  1   \right)^2 \;  - \; w_t L_t \; - p^I_t I_t \; > \; 0
+\end{gather*}
+we note that the first order condition for labor is not affected by this constraint. In the current problem we can always write the f.o.c. for employment as the inverse function $L\left( K_{t-1},A_t,w_t,p_t \right)$ which then implies we can find the boundary value $K_{*}$ through
+\begin{gather*}
+\pi_t \;= \; p_t A_t \cdot K^{\alpha_k}_{*} \cdot L^{\alpha_l}_{*}   \;  - \; p_t \frac{\gamma}{2}\cdot K_{*}\cdot \left(  \frac{K_t}{K_{*}}  \; -\;  1   \right)^2 \;  - \; w_t L_{*} \; - p^I_t \left(K_t - (1-\delta) K_{*} \right)\; = \; 0
+\end{gather*}
+This value $K_{*}$ divides the state space of $K_{t-1}$ in two sections, where only on one side is the Euler equation admissible.
+
+\subsection{The EGA in practice} 
+This section briefly explains how the above problem is solved in the associated code. The EGA finds the optimal $K_{t-1}$ conditional on $K_t$ and future choices by inverting the dynamic first-order condition. In particular it solves the equation:
+\begin{gather}
+    p_{t}^{I}+p_{t}\gamma\left(\frac{K_{t}}{K_{t-1}}-1\right)= EMCT_{t}  \label{eq:Dyn_FOC}
+\end{gather}
+where $EMCT_{t}$ is the expected marginal continuation value given by:
+\begin{gather*}
+EMCT_{t}=E_{t}\left\{ \beta_{t+1}p_{t+1}^{I}\left(1-\delta\right)\right\} +E_{t}\left\{ \beta_{t+1}p_{t+1}\left(\alpha_{k}A_{t+1}K_{t}^{\alpha_{k}-1}L_{t+1}^{\alpha_{l}}+\frac{\gamma}{2}\left[\left(\frac{K_{t+1}}{K_{t}}\right)^{2}-1\right]\right)\right\} 
+\end{gather*}
+The algorithm starts with an initial guess for $EMCT_{t}$ and solves for $K_{t-1}$ using (\ref{eq:Dyn_FOC}), which yields the policy function $K_{t-1}(K_t)$. 
+It proceeds by inverting the policy function by interpolation to give the solution to the problem $K_t(K_{t-1})$. Given this one can compute a new $EMCT_{t}$ which can be used for further backwards iterations. This is repeated until a fixed point in $K_t$ is reached. Algorithm 1 presents pseudocode that conducts one backwards iteration as described here.  
+
+
+\begin{algorithm} 
+  \caption{Backwards EGA step}
+ % \textbf{Part 1}\;
+ \nl \textit{Calculate derivative of cost gamma function when adjust from $k_j$ to $k_i$} on grid (rhs of eq. (\ref{eq:Dyn_FO}))\;
+ \nl  \For{$j = 0$ \To{} $nK$  }{
+  \nl      \For{$i = 0$ \To{} $nK$  }{
+            $dGamma_{i,j} = \gamma\cdot (\bar{k}_i/\bar{k}_j-1) $
+  }
+  }
+  
+ \nl  \textit{Take expectation and discount future marginal continuation value ($EMCT_{t}$)} \;
+ \nl  \quad $EMCT_{t}$ = $\beta MCT_{t+1}$ \;
+
+ \nl \textit{Solve dynamic FOC for $k_{t-1}$ and interpolate policy function in one step}\;
+ \nl   \quad    $rhs = EMCT_{t}$ \;
+ \nl   \quad    $lhs = p^I + p dGamma$ \;
+ \nl   \qua     $k_t = intpolate(rhs, lhs \bar{k})$ \;
+ \nl  \textit{Calculate optimal labor input by inverting labor demand} \;
+ \nl   \quad    $l = (\frac{w}{alpha^L p* A * \bar{k}^{alpha^K}})^{(1/({alpha^L}-1))}$ \;
+ \nl  \textit{Calculate $MCT_{t+1}$ for further backwards iteration} \;
+ \nl   \quad $MCT_{t+1} = p^I_t  (1-delta^K) + p\left(\alpha_{k}A\bar{k}^{\alpha_{k}-1} l^{\alpha_{l}}+\frac{\gamma}{2}\left[\left(\frac{k}{\bar{k}}\right)^{2}-1\right]\right)$  \; 
+
+\end{algorithm}
+
+
+\section{References}
+
+Carroll, Christopher. (2006). The Method of Endogenous Gridpoints for Solving Dynamic Stochastic Optimization Problems. Economics Letters. 91. 312-320.\\
+\vspace*{-0.2cm}\\
+"This paper introduces a method for solving numerical dynamic stochastic optimization problems that avoids rootfinding operations. The idea is applicable to many microeconomic and macroeconomic problems, including life cycle, buffer-stock, and stochastic growth problems."\\
+\vspace*{-0.2cm}\\
+
+
+
+
+
+
+
+\end{document}
+
+
+
+
