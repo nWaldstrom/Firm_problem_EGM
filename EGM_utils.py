@@ -6,14 +6,14 @@ from numba import vectorize, njit, guvectorize
 
 @njit 
 def get_gamma_derive(x_p, x, gamma):
-    fgamma  = gamma /2 * (x_p/x-1)**2 
+    fgamma  = gamma /2 * (x_p/x-1)**2 * x
     dfgamma1 = gamma * (x_p/x-1) 
-    dfgamma2 = gamma /2 * (x_p/x-1)**2 - gamma * (x_p/x-1) * x_p/x
+    dfgamma2 = gamma /2 * ((x_p/x)**2 -1) 
     return fgamma, dfgamma1, dfgamma2
 
 @njit
-def inv_R_demand(pR, theta, alpha, z, n, p):
-    return (pR/(theta*p*z * n**alpha))**(1/(theta-1))
+def inv_L_demand(w, alphaL, alphaK, z, k, p):
+    return (w/(alphaL*p*z * k**alphaK))**(1/(alphaL-1))
 
 def matrix_times_first_dim(A, X):
     """Take matrix A times vector X[:, i1, i2, i3, ... , in] separately
