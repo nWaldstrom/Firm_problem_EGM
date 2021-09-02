@@ -477,7 +477,7 @@ class HetBlock:
         return c**(1-1/eis)/(1-1/eis)
 
 
-    def policy_ss(self, ssin, Pi, tol=1E-10, maxit=3000, accelerated_it = True, noisy = False, update_pol=None, nIt = 5, **kwargs):
+    def policy_ss(self, ssin, Pi, tol=1E-10, maxit=3000, accelerated_it = True, noisy = False, update_pol=None, nIt = 5, conv_var = 'policy',  **kwargs):
         """Find steady-state policies and backward variables through backward iteration until convergence.
 
         Parameters
@@ -505,6 +505,12 @@ class HetBlock:
         # vs ={k: ssin[k+ '_p'] for k in self.backward}
         # vs_pol_it = vs
         
+        if conv_var == 'policy':
+            conv_var_list = self.policy
+        elif conv_var == 'backwards':
+            conv_var_list = self.backward
+        else:
+            conv_var_list = conv_var
 
             # ssin['J'] = J
         original_ssin = ssin
@@ -530,12 +536,16 @@ class HetBlock:
                 raise
                 
             # only check convergence every 10 iterations for efficiency
-            if it % 10 == 1 and all(utils.within_tolerance(sspol[k], old[k], tol) for k in self.policy):
+            if noisy:
+                if it%100==0 and it > 2:
+                    errorlist = {k : max(abs(sspol[k] - old[k]).flatten()) for k in conv_var_list}
+                    print('Max error:', errorlist)
+            if it % 10 == 1 and all(utils.within_tolerance(sspol[k], old[k], tol) for k in conv_var_list):
                 print('Converged after :' , it, 'iterations')     
                 break
 
             # update 'old' for comparison during next iteration, prepare 'ssin' as input for next iteration
-            old.update({k: sspol[k] for k in self.policy})
+            old.update({k: sspol[k] for k in conv_var_list})
             ssin.update({k + '_p': sspol[k] for k in self.backward})
         else:
             raise ValueError(f'No convergence of policy functions after {maxit} backward iterations!')
