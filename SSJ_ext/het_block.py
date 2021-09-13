@@ -115,7 +115,7 @@ class HetBlock:
     '''
 
 
-    def ss(self, backward_tol=1E-10, backward_maxit=11000, forward_tol=1E-10, forward_maxit=300_000, accelerated_it = True, noisy = False, **kwargs):
+    def ss(self, backward_tol=1E-10, backward_maxit=11000, forward_tol=1E-10, forward_maxit=300_000, accelerated_it = True, **kwargs):
         """Evaluate steady state HetBlock using keyword args for all inputs. Analog to SimpleBlock.ss.
 
         Parameters
@@ -162,7 +162,7 @@ class HetBlock:
         
 
         # run backward iteration
-        sspol = self.policy_ss(kwargs, Pi, backward_tol, backward_maxit, accelerated_it, noisy, **kwargs)
+        sspol = self.policy_ss(kwargs, Pi, backward_tol, backward_maxit, accelerated_it, **kwargs)
   
         # run forward iteration
         D = self.dist_ss(Pi, sspol, grid, forward_tol, forward_maxit, D_seed, pi_seed)
@@ -477,7 +477,7 @@ class HetBlock:
         return c**(1-1/eis)/(1-1/eis)
 
 
-    def policy_ss(self, ssin, Pi, tol=1E-10, maxit=3000, accelerated_it = True, noisy = False, update_pol=None, nIt = 5, conv_var = 'policy',  **kwargs):
+    def policy_ss(self, ssin, Pi, tol=1E-10, maxit=3000, accelerated_it = True, noisy = False, update_pol=None, nIt = 3, conv_var = 'policy', disp_itt = 100, accelerated_it_end=0,  **kwargs):
         """Find steady-state policies and backward variables through backward iteration until convergence.
 
         Parameters
@@ -524,11 +524,10 @@ class HetBlock:
             try:
                 # run and store results of backward iteration, which come as tuple, in dict
                 if accelerated_it and it > nIt:
-                    
-                    pol_itt = update_pol(**ssin, **sspol)
-                    
-                    for k in self.backward:
-                        ssin.update({k + '_p': pol_itt[k] for k in self.backward})
+                    if maxerror > accelerated_it_end:
+                        pol_itt = update_pol(**ssin, **sspol)                   
+                        for k in self.backward:
+                            ssin.update({k + '_p': pol_itt[k] for k in self.backward})
 
                 sspol = {k: v for k, v in zip(self.all_outputs_order, self.back_step_fun(**ssin))}
             except KeyError as e:
@@ -537,13 +536,15 @@ class HetBlock:
                 
             # only check convergence every 10 iterations for efficiency
             if noisy:
-                if it%100==0 and it > 2:
+                if it%disp_itt==0 and it > 2:
                     errorlist = {k : max(abs(sspol[k] - old[k]).flatten()) for k in conv_var_list}
                     print('Max error:', errorlist)
             if it % 10 == 1 and all(utils.within_tolerance(sspol[k], old[k], tol) for k in conv_var_list):
                 print('Converged after :' , it, 'iterations')     
                 break
-
+            if accelerated_it and it > 2:
+                errorlist = {k : max(abs(sspol[k] - old[k]).flatten()) for k in conv_var_list}
+                maxerror = max(errorlist.values())
             # update 'old' for comparison during next iteration, prepare 'ssin' as input for next iteration
             old.update({k: sspol[k] for k in conv_var_list})
             ssin.update({k + '_p': sspol[k] for k in self.backward})
